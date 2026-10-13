@@ -557,7 +557,6 @@ main{flex:1;padding:0 20px calc(48px + env(safe-area-inset-bottom))}
       var t = await navigator.clipboard.readText();
       if(t){ $("url").value = t.trim(); toast("Ditempel"); } else toast("Clipboard kosong", "err");
     }catch(e){ toast("Gagal menempel", "err"); }
-    $("url").focus();
   });
   $("copy").addEventListener("click", function(){ copyText(lastOut); });
   $("share").addEventListener("click", async function(){
