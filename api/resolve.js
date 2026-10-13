@@ -33,6 +33,18 @@ const SERVICES = {
     urlKeys: ["url"],
   },
   tpili: {
+    project: "bypass-tools:tpi-li",
+    hosts: ["tpi.li", "oil.la", "tii.la", "oei.la", "iir.la", "tvi.la", "oii.la", "lnbz.la"],
+    urlKeys: ["destinationUrl"],
+  },
+  sub2unlock: {
+    project: "bypass-tools:sub2unlock",
+    action: "bypass",
+    hosts: ["sub2unlock.com", "sub2unlock.net", "sub2unlock.io"],
+    urlKeys: ["destinationUrl"],
+  },
+  scriptpastebins: {
+    project: "bypass-tools:scriptpastebins",
     hosts: ["scriptpastebins.com"],
     bare: /^[\w-]+$/,
     textKeys: ["script"],
@@ -70,6 +82,21 @@ function normalize(cfg, json) {
   return json;
 }
 
+function hostAllowed(cfg, host) {
+  return cfg.hosts.some((h) => host === h || host.endsWith("." + h));
+}
+
+module.exports = async function handler(req, res) {
+  if (req.method !== "GET") {
+    return res.status(405).json({ error: "method_not_allowed" });
+  }
+
+  const service = String((req.query && req.query.service) || "safelinku");
+  const cfg = Object.prototype.hasOwnProperty.call(SERVICES, service) ? SERVICES[service] : null;
+  if (!cfg) return res.status(400).json({ error: "invalid_service" });
+
+  const target = String((req.query && req.query.url) || "").trim();
+  let param;
   if (cfg.bare && cfg.bare.test(target)) {
     param = target; // id / slug langsung
   } else {
