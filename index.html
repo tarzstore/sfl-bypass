@@ -1355,7 +1355,7 @@ img,svg,video{max-width:100%}
     if(FB_CFG.apiKey.indexOf("ISI_") === 0) return Promise.resolve(false);
     if(!fbLoading){
       fbLoading = Promise.all(FB_SRC.map(loadScript)).then(function(){
-        firebase.initializeApp(FB_CFG); auth = firebase.auth(); db = firebase.firestore(); fbOk = true; startFb(); return true;
+        firebase.initializeApp(FB_CFG); auth = firebase.auth(); db = firebase.firestore(); try{ db.settings({ experimentalAutoDetectLongPolling: true, merge: true }); }catch(e){} fbOk = true; startFb(); return true;
       }).catch(function(){ fbLoading = null; return false; });
     }
     return fbLoading;
@@ -1422,7 +1422,7 @@ img,svg,video{max-width:100%}
       db.collection("stats").doc(w.day).set(o, { merge: true }).catch(function(){});
     }catch(e){}
     try{
-      db.collection("logs").add({ t: Date.now(), ok: !!ok, svc: sk, code: ok ? "" : (code || "other"), inp: String(inp || "").slice(0, 160), dst: String(dst || "").slice(0, 80), fin: ok && fin ? String(fin).slice(0, 500) : "" }).catch(function(e){ console.warn("[log] gagal tulis:", e && e.code, e && e.message); });
+      db.collection("logs").add({ t: Date.now(), ok: !!ok, svc: sk, code: ok ? "" : (code || "other"), inp: String(inp || "").slice(0, 160), dst: String(dst || "").slice(0, 80), fin: ok && fin ? String(fin).slice(0, 500) : "" }).then(function(){ console.log("[log] tercatat"); }).catch(function(e){ console.warn("[log] gagal tulis:", e && e.code, e && e.message); if(admUser) toast("Log gagal ditulis: " + ((e && e.code) || "error"), "err"); });
     }catch(e){}
   }
   function logVisit(){
