@@ -601,7 +601,7 @@ html{scroll-padding-top:64px}
 .lo-out{color:var(--ink);opacity:.8}
 .lo-out.bad{color:var(--err);opacity:1}
 .lo-ago{flex:none;align-self:flex-start;margin-top:2px;font:400 10.5px var(--mono);color:var(--mute)}
-.lo-row .mini{width:32px;height:32px}
+.lo-row .mini{width:32px;height:32px;text-decoration:none}
 .lo-clear{display:block;width:100%;margin-top:14px;height:40px;border-radius:var(--r-md);border:1px solid var(--line);background:var(--bg);color:var(--mute);font:600 12.5px var(--sans);cursor:pointer;transition:color .15s,border-color .15s,background .15s}
 .lo-clear:hover,.lo-clear.arm{color:var(--err);border-color:color-mix(in srgb,var(--err) 45%,transparent)}
 .lo-clear.arm{background:color-mix(in srgb,var(--err) 10%,var(--bg))}
@@ -791,6 +791,34 @@ img,svg,video{max-width:100%}
 @media (min-width:600px){.hero{padding-top:28px}}
 @media (min-width:960px){.sect{padding-top:28px}}
 @media (max-height:520px) and (orientation:landscape){.hero{padding-top:12px}}
+
+/* dropdown layanan v2: pencarian, filter, chip tipe */
+.pick-pop{position:absolute;left:0;right:0;top:calc(100% + 8px);z-index:30;display:flex;flex-direction:column;max-height:min(440px,62vh);border-radius:18px;background:var(--s1);border:1px solid var(--line2);box-shadow:var(--shadow);overflow:hidden;animation:in .2s cubic-bezier(.2,.9,.3,1)}
+.pick-head{padding:10px;background:var(--s1);border-bottom:1px solid var(--line)}
+.pick-q{display:flex;align-items:center;gap:8px;height:42px;padding:0 6px 0 12px;border-radius:12px;background:var(--bg);border:1px solid var(--line2);color:var(--mute);transition:border-color .15s,color .15s}
+.pick-q:focus-within{border-color:var(--acc);color:var(--acc)}
+.pick-q svg{width:16px;height:16px}
+.pick-q input{flex:1;min-width:0;height:100%;border:0;outline:0;background:none;color:var(--ink);font-size:14.5px}
+.pick-q input:focus-visible{outline:0}
+.pick-q input::placeholder{color:var(--mute)}
+.pick-clr{width:28px;height:28px;border:0;border-radius:50%;background:transparent;color:var(--mute);display:grid;place-items:center;cursor:pointer}
+.pick-clr:hover{background:var(--s2);color:var(--ink)}
+.pick-clr svg{width:14px;height:14px}
+.pick-list{position:relative;flex:1;min-height:0;max-height:none;overflow-y:auto;overscroll-behavior:contain;padding:6px;border:0;border-radius:0;background:none;box-shadow:none;animation:none}
+.pick-list li{padding:7px 10px;border-radius:12px;gap:0}
+.pick-list li>span:nth-child(2){flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pick-list li:hover,.pick-list li:focus-visible{background:var(--s2);outline:0}
+.pick-list li:focus-visible{box-shadow:inset 0 0 0 1.5px var(--acc)}
+.pick-list li[aria-selected=true]{background:var(--soft);color:var(--acc)}
+.pick-list li[aria-selected=true] .li-ic{background:var(--acc);color:var(--on-acc)}
+.pick-list li em{margin-left:8px;width:18px;flex:none}
+.pick-empty{padding:26px 16px;text-align:center;color:var(--mute);font-size:14px}
+.pick-foot{padding:8px 14px;border-top:1px solid var(--line);color:var(--mute);font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase}
+@media (max-width:480px){
+  .pick-pop{max-height:min(420px,58vh)}
+  .pick-q input{font-size:16px}
+}
+@media (prefers-reduced-motion:reduce){.pick-pop{animation:none}}
 </style>
 </head>
 <body>
@@ -831,12 +859,23 @@ img,svg,video{max-width:100%}
       <div class="box">
         <div class="pick" id="pick">
           <span class="lbl">Layanan</span>
-          <button class="pick-btn" id="svcBtn" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="svcList">
+          <button class="pick-btn" id="svcBtn" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="svcPop">
             <span class="pick-ic" id="svcIc" aria-hidden="true"></span>
             <b id="svcName">Safelinku</b>
             <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
           </button>
-          <ul class="pick-list" id="svcList" role="listbox" aria-label="Layanan" hidden></ul>
+          <div class="pick-pop" id="svcPop" hidden>
+            <div class="pick-head">
+              <label class="pick-q">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                <input id="svcQ" type="search" placeholder="Cari layanan" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="search" aria-label="Cari layanan">
+                <button class="pick-clr" id="svcClr" type="button" aria-label="Hapus pencarian" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+              </label>
+            </div>
+            <ul class="pick-list" id="svcList" role="listbox" aria-label="Layanan"></ul>
+            <div class="pick-empty" id="svcEmpty" hidden>Layanan tidak ditemukan</div>
+            <div class="pick-foot" id="svcCount"></div>
+          </div>
         </div>
         <div>
           <label class="lbl" for="url">Input Link</label>
@@ -1074,7 +1113,24 @@ img,svg,video{max-width:100%}
     sub2unlock:  { ic:sv('<path d="M5 12h14M13 6l6 6-6 6"/>'), name:"Sub2Unlock", ph:"https://sub2unlock.com/hYTuA" },
     scriptpastebins: { ic:sv('<path d="m8 8-4 4 4 4M16 8l4 4-4 4M14 5l-4 14"/>'), name:"Script Pastebins", label:"Script", ph:"https://scriptpastebins.com/dum-hub-blox-fruits/", bare:/^[\w-]+$/ },
     pastebin:    { ic:sv('<rect x="8" y="3" width="8" height="4" rx="1"/><path d="M16 5h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2M9 13h6M9 17h4"/>'), name:"Pastebin", label:"Isi Paste", ph:"https://pastebin.com/1PWxczzC", bare:/^[A-Za-z0-9]{6,12}$/ },
-    pastelua:    { ic:sv('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>'), name:"PasteLua", label:"Script", ph:"https://pastelua.com/k8mp5aw1", bare:/^[A-Za-z0-9]{6,12}$/ }
+    pastelua:    { ic:sv('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>'), name:"PasteLua", label:"Script", ph:"https://pastelua.com/k8mp5aw1", bare:/^[A-Za-z0-9]{6,12}$/ },
+    shrinkme: { ic:sv('<path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/>'), name:"ShrinkMe", ph:"https://shrinkme.click/AbCd12" },
+    bitly: { ic:sv('<path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0zM3 12h18M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18"/>'), name:"Bitly", ph:"https://bit.ly/4nIf3hj", bare:/^[A-Za-z0-9_-]{4,20}$/ },
+    clksh: { ic:sv('<path d="m5 3 14 8-6 2-2 6z"/>'), name:"Clk.sh", ph:"https://clk.sh/AbCd12" },
+    yasir252: { ic:sv('<path d="M12 4v11M7 11l5 5 5-5M5 20h14"/>'), name:"Yasir252", label:"Link Download", ph:"https://www.yasir252.com/software/..." },
+    bloxscript: { ic:sv('<path d="M12 3 3 8l9 5 9-5zM3 8v8l9 5 9-5V8M12 13v8"/>'), name:"Blox-Script Key", label:"Key", ph:"https://boblox-script.com/get-key?c=..." },
+    gzenx: { ic:sv('<path d="M3 12a4 4 0 0 1 4-4h10a4 4 0 0 1 0 10H7a4 4 0 0 1-4-6zM8 11v4M6 13h4M15 12h.01M17.5 14h.01"/>'), name:"GZenX", label:"Script", ph:"https://www.gzenx.com/games/...", bare:/^[\\w-]{3,120}$/ },
+    encurtador: { ic:sv('<path d="M9 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12"/>'), name:"Encurtador / l1nq", ph:"https://l1nq.com/xke37hn", bare:/^[A-Za-z0-9_-]{3,20}$/ },
+    linkzy: { ic:sv('<path d="M5 11h14v10H5zM8 11V7a4 4 0 0 1 7.5-2"/>'), name:"Linkzy", ph:"https://linkzy.space/unlock/81439f4a", bare:/^[A-Za-z0-9_-]{4,40}$/ },
+    pastefy: { ic:sv('<path d="M6 4h12v17H6zM9 4h6v3H9zM9 12h6M9 16h4"/>'), name:"Pastefy", label:"Isi Paste", ph:"https://pastefy.app/35OpZwqx", bare:/^[A-Za-z0-9]{4,16}$/ },
+    rentry: { ic:sv('<path d="M4 5h16M4 10h16M4 15h10M4 20h7"/>'), name:"Rentry", label:"Isi Paste", ph:"https://rentry.co/what", bare:/^[\\w-]{2,60}$/ },
+    socialwolvez: { ic:sv('<path d="M13 8a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0zM2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/>'), name:"SocialWolvez", ph:"https://socialwolvez.com/app/l/81439f4a", bare:/^[A-Za-z0-9_-]{4,24}$/ },
+    pastedrop: { ic:sv('<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>'), name:"Paste-Drop", label:"Script", ph:"https://paste-drop.com/AdoptMeScript2024", bare:/^[\\w-]{2,80}$/ },
+    tempelin: { ic:sv('<path d="M5 4h14v10l-6 6H5zM13 20v-6h6"/>'), name:"Tempel.in", label:"Isi Paste", ph:"https://tempel.in/view/TVJ35jiR", bare:/^[A-Za-z0-9_-]{4,24}$/ },
+    mboost: { ic:sv('<path d="m12 3 7 8h-4v10H9V11H5z"/>'), name:"MBoost", ph:"https://mboost.me/abc", bare:/^[\\w-]{2,60}$/ },
+    linkify: { ic:sv('<path d="M9 17H7a5 5 0 0 1 0-10h2M15 7h2a5 5 0 0 1 0 10h-2M8 12h8"/>'), name:"Linkify", ph:"https://go.linkify.ru/28Mw", bare:/^[A-Za-z0-9_-]{2,16}$/ },
+    ez4short: { ic:sv('<path d="m13 6 6 6-6 6M5 6l6 6-6 6"/>'), name:"EZ4Short", ph:"https://ez4short.com/PJjTK", bare:/^[A-Za-z0-9_-]{3,16}$/ },
+    pasterso: { ic:sv('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M12 12v6M9 15h6"/>'), name:"Paster.so", label:"Isi Paste", ph:"https://paster.so/dHSLD", bare:/^[A-Za-z0-9_-]{3,16}$/ }
   };
   var ord = [], hid = {}, names = {};
   Object.keys(SERVICES).forEach(function(k){ SERVICES[k].orig = SERVICES[k].name; });
@@ -1097,7 +1153,29 @@ img,svg,video{max-width:100%}
     $("svcName").textContent = v.name; $("svcIc").innerHTML = v.ic;
     document.querySelectorAll("#svcList li").forEach(function(li){ li.setAttribute("aria-selected", li.dataset.svc === svc); });
   }
-  function closeSvc(){ $("svcList").hidden = true; $("svcBtn").setAttribute("aria-expanded", false); }
+  function closeSvc(){
+    if($("svcPop").hidden) return;
+    $("svcPop").hidden = true; $("svcBtn").setAttribute("aria-expanded", false);
+    $("svcQ").value = "";
+  }
+  function filterSvc(){
+    var q = $("svcQ").value.trim().toLowerCase(), n = 0, all = 0;
+    $("svcClr").hidden = !q;
+    document.querySelectorAll("#svcList li").forEach(function(li){
+      all++;
+      var ok = !q || li.dataset.q.indexOf(q) > -1;
+      li.hidden = !ok; if(ok) n++;
+    });
+    $("svcEmpty").hidden = n > 0; $("svcList").hidden = n === 0;
+    $("svcCount").textContent = (n === all ? all : n + " dari " + all) + " layanan";
+  }
+  function openSvc(){
+    $("svcPop").hidden = false; $("svcBtn").setAttribute("aria-expanded", true);
+    $("svcQ").value = ""; filterSvc();
+    var ul = $("svcList"), s = ul.querySelector('[aria-selected="true"]');
+    ul.scrollTop = s ? Math.max(0, s.offsetTop - ul.clientHeight / 2 + s.offsetHeight / 2) : 0;
+    if(window.matchMedia && matchMedia("(pointer:fine)").matches) $("svcQ").focus();
+  }
   function buildSvcList(){
     var ul = $("svcList"); ul.innerHTML = "";
     var keys = orderedKeys().filter(function(k){ return !hid[k]; });
@@ -1105,6 +1183,9 @@ img,svg,video{max-width:100%}
     keys.forEach(function(k){
       var li = document.createElement("li");
       li.setAttribute("role","option"); li.dataset.svc = k; li.tabIndex = 0;
+      var isTxt = !!SERVICES[k].label;
+      li.dataset.t = isTxt ? "text" : "link";
+      li.dataset.q = (SERVICES[k].name + " " + (SERVICES[k].orig || "")).toLowerCase();
       li.innerHTML = '<span class="li-ic">' + SERVICES[k].ic + '</span><span>' + SERVICES[k].name + '</span><em>' + OK_SVG + '</em>';
       function choose(){
         var inf = stInfo(k); if(inf){ toast(inf.msg, "err"); return; }
@@ -1116,9 +1197,19 @@ img,svg,video{max-width:100%}
       ul.appendChild(li);
     });
     applySvc(); markOff();
+    if(!$("svcPop").hidden) filterSvc();
   }
-  $("svcBtn").addEventListener("click", function(){
-    var open = $("svcList").hidden; $("svcList").hidden = !open; this.setAttribute("aria-expanded", open);
+  $("svcBtn").addEventListener("click", function(){ if($("svcPop").hidden) openSvc(); else closeSvc(); });
+  $("svcQ").addEventListener("input", filterSvc);
+  $("svcClr").addEventListener("click", function(){ $("svcQ").value = ""; filterSvc(); $("svcQ").focus(); });
+  /* navigasi keyboard: panah naik/turun, Enter pilih hasil pertama */
+  $("svcPop").addEventListener("keydown", function(e){
+    var vis = Array.prototype.filter.call($("svcList").children, function(x){ return !x.hidden; });
+    var cur = vis.indexOf(document.activeElement);
+    if(e.key === "ArrowDown"){ e.preventDefault(); (vis[cur + 1] || vis[0] || $("svcQ")).focus(); }
+    else if(e.key === "ArrowUp"){ e.preventDefault(); if(cur > 0) vis[cur - 1].focus(); else $("svcQ").focus(); }
+    else if(e.key === "Enter" && document.activeElement === $("svcQ") && vis[0]){ e.preventDefault(); vis[0].click(); }
+    else if(e.key === "Escape"){ closeSvc(); $("svcBtn").focus(); }
   });
   document.addEventListener("click", function(e){ if(!e.target.closest("#pick")) closeSvc(); });
   document.addEventListener("keydown", function(e){ if(e.key === "Escape") closeSvc(); });
@@ -1137,6 +1228,7 @@ img,svg,video{max-width:100%}
     if(input && !/^[a-z][a-z0-9+.-]*:\/\//i.test(input) && /^[\w.-]+\.[a-z]{2,}\//i.test(input)){
       input = "https://" + input; $("url").value = input;
     }
+    if(!maint.on){ try{ await ensureFb(); await refreshCfgNow(); }catch(e){} }
     if(maint.on){ showError(maint.msg.trim().slice(0, 160) || MAINT_DEF); return; }
     if(hid[svc]){ showError("Layanan sedang dinonaktifkan"); return; }
     var infS = stInfo(svc); if(infS){ showError(infS.msg); return; }
@@ -1152,6 +1244,12 @@ img,svg,video{max-width:100%}
       if(res.status === 401) throw new Error("Layanan bermasalah");
       if(res.status === 404) throw new Error("Link tidak ditemukan");
       if(res.status === 429) throw new Error("Terlalu cepat, tunggu sebentar");
+      if(res.status === 503){
+        var mj = null; try{ mj = await res.json(); }catch(e){}
+        maint = { on: true, msg: String((mj && mj.message) || "") };
+        logged = true; // jangan dicatat sebagai gagal
+        throw new Error(maint.msg.trim().slice(0, 160) || MAINT_DEF);
+      }
       if(!res.ok) throw new Error("Server error " + res.status);
       var json = await res.json();
       var d = json && json.data;
@@ -1170,7 +1268,7 @@ img,svg,video{max-width:100%}
       $("result").classList.remove("show"); void $("result").offsetWidth; $("result").classList.add("show");
       $("vizB").textContent = p.host; hero.classList.add("done");
       $("result").scrollIntoView({ behavior: "smooth", block: "nearest" });
-      logged = true; logStat(true, sk, null, d.inputUrl || input, isText ? "(teks)" : p.host);
+      logged = true; logStat(true, sk, null, d.inputUrl || input, isText ? "(teks)" : p.host, isText ? "" : d.finalUrl);
 
       if(!isText){ var h = loadHist().filter(function(x){ return x.final !== d.finalUrl; });
       h.unshift({ input: d.inputUrl || input, final: d.finalUrl, t: Date.now() });
@@ -1287,6 +1385,14 @@ img,svg,video{max-width:100%}
       writeCfg(d); if(!same) applyCfg(d);
     }).catch(function(){});
   }
+  /* baca config terbaru langsung dari server (abaikan cache), dipakai sebelum bypass */
+  function refreshCfgNow(){
+    if(!fbOk || !db) return Promise.resolve();
+    return db.doc("config/services").get({ source: "server" }).then(function(snap){
+      var d = snap.exists ? snap.data() : {};
+      writeCfg(d); applyCfg(d);
+    }).catch(function(){});
+  }
   /* live listener hanya aktif selama panel admin terbuka */
   function watchCfg(on){
     if(!on){ if(cfgUnsub){ cfgUnsub(); cfgUnsub = null; } return; }
@@ -1306,8 +1412,8 @@ img,svg,video{max-width:100%}
     var M = { "Link tidak valid": "invalid", "Layanan bermasalah": "service", "Link tidak ditemukan": "notfound", "Terlalu cepat, tunggu sebentar": "rate", "Tujuan tidak ditemukan": "nodest", "Gagal terhubung": "network" };
     if(M[m]) return M[m]; if(/^Server error/.test(m)) return "server"; return "other";
   }
-  function logStat(ok, sk, code, inp, dst){
-    if(!fbOk){ if(qLog.length < 20) qLog.push([ok, sk, code, inp, dst]); ensureFb(); return; }
+  function logStat(ok, sk, code, inp, dst, fin){
+    if(!fbOk){ if(qLog.length < 20) qLog.push([ok, sk, code, inp, dst, fin]); ensureFb(); return; }
     try{
       var w = wibNow(), inc = firebase.firestore.FieldValue.increment, f = ok ? "ok" : "fail", o = {};
       o[f] = inc(1); o.svc = {}; o.svc[sk] = {}; o.svc[sk][f] = inc(1);
@@ -1316,7 +1422,7 @@ img,svg,video{max-width:100%}
       db.collection("stats").doc(w.day).set(o, { merge: true }).catch(function(){});
     }catch(e){}
     try{
-      db.collection("logs").add({ t: Date.now(), ok: !!ok, svc: sk, code: ok ? "" : (code || "other"), inp: String(inp || "").slice(0, 160), dst: String(dst || "").slice(0, 80) }).catch(function(){});
+      db.collection("logs").add({ t: Date.now(), ok: !!ok, svc: sk, code: ok ? "" : (code || "other"), inp: String(inp || "").slice(0, 160), dst: String(dst || "").slice(0, 80), fin: ok && fin ? String(fin).slice(0, 500) : "" }).catch(function(){});
     }catch(e){}
   }
   function logVisit(){
@@ -1515,7 +1621,13 @@ img,svg,video{max-width:100%}
           var ag = el("span", "lo-ago", ago(x.t)); ag.title = absTime(x.t);
           var cp = el("button", "mini"); cp.type = "button"; cp.setAttribute("aria-label", "Salin link"); cp.innerHTML = COPY_SVG;
           cp.addEventListener("click", async function(){ if(await copyText(x.inp || "")){ cp.innerHTML = OK_SVG; setTimeout(function(){ cp.innerHTML = COPY_SVG; }, 1200); } });
-          row.appendChild(ri); row.appendChild(tx); row.appendChild(ag); row.appendChild(cp); list.appendChild(row);
+          row.appendChild(ri); row.appendChild(tx); row.appendChild(ag);
+          if(x.ok && x.fin && isHttpUrl(x.fin)){
+            var op = el("a", "mini"); op.href = x.fin; op.target = "_blank"; op.rel = "noopener noreferrer"; op.title = "Buka link tujuan"; op.setAttribute("aria-label", "Buka link tujuan");
+            op.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6"/><path d="M20 4 10 14"/><path d="M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></svg>';
+            row.appendChild(op);
+          }
+          row.appendChild(cp); list.appendChild(row);
         });
         body.appendChild(list);
       }
