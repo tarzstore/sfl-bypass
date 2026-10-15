@@ -819,6 +819,26 @@ img,svg,video{max-width:100%}
   .pick-q input{font-size:16px}
 }
 @media (prefers-reduced-motion:reduce){.pick-pop{animation:none}}
+
+/* ===== Tombol Bypass Link (premium) ===== */
+.go{height:58px;border-radius:18px;font-size:16px;font-weight:700;letter-spacing:-.015em;gap:12px;padding:0 10px;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--acc) 70%,#fff) 0%,var(--acc) 45%,color-mix(in srgb,var(--acc) 72%,#6a4cff) 100%);
+  box-shadow:0 16px 32px -12px var(--glow),0 2px 0 rgba(255,255,255,.35) inset,0 -2px 0 rgba(0,0,0,.14) inset,0 0 0 1px color-mix(in srgb,var(--acc) 60%,#000);
+  transition:transform .18s cubic-bezier(.2,.8,.2,1),box-shadow .18s,filter .15s}
+.go:hover{transform:translateY(-1px);filter:brightness(1.07)}
+.go:active{transform:translateY(0) scale(.985)}
+.go .go-ic,.go .go-ar{flex:none;width:38px;height:38px;border-radius:13px;display:grid;place-items:center;background:rgba(255,255,255,.2);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 4px 10px -4px rgba(0,0,0,.3);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.go .go-ic svg{width:20px;height:20px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25));transition:transform .25s}
+.go:hover .go-ic svg{transform:rotate(-12deg) scale(1.12)}
+.go .go-ar{background:rgba(0,0,0,.16);box-shadow:none}
+.go .go-ar .arr{width:18px;height:18px;padding:0;background:none;border-radius:0;transition:transform .2s}
+.go:hover .go-ar .arr{transform:translateX(3px)}
+.go #goText{flex:1;text-align:center}
+.go .spin{position:absolute;left:29px;top:50%;margin-top:-9px;width:18px;height:18px;z-index:2}
+.go:disabled .go-ic svg{opacity:0}
+.go:disabled .go-ar{opacity:.6}
+.go:disabled .arr{display:block}
+.go:disabled{filter:saturate(.85)}
 </style>
 </head>
 <body>
@@ -885,7 +905,7 @@ img,svg,video{max-width:100%}
             <button class="ghost" id="paste" type="button" aria-label="Tempel dari clipboard" title="Tempel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z"/><path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/><path d="M16 4h2a2 2 0 0 1 2 2v2"/><path d="M21 14H11"/><path d="m15 10-4 4 4 4"/></svg></button>
           </div>
         </div>
-        <button class="go" id="go" type="button"><span class="spin"></span><span id="goText">Bypass Link</span><svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+        <button class="go" id="go" type="button"><span class="spin"></span><span class="go-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></span><span id="goText">Bypass Link</span><span class="go-ar" aria-hidden="true"><svg class="arr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></button>
       </div>
 
       <div class="result" id="result" aria-live="polite">
