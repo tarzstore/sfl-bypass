@@ -1424,11 +1424,11 @@ img,svg,video{max-width:100%}
     try{
       var cl1 = function(v, n){ return String(v || "").replace(/[\r\n\t]+/g, " ").trim().slice(0, n); };
       var fu = (ok && fin && /^https?:\/\/[^\s]+$/i.test(String(fin).trim())) ? String(fin).trim().slice(0, 500) : "";
-      var ld = { t: Math.floor(Date.now()), ok: !!ok, svc: cl1(sk, 28), code: ok ? "" : cl1(code || "other", 18), inp: cl1(inp, 160), dst: cl1(dst, 80), fin: fu };
+      var ld = { t: Math.floor(Date.now()), ok: !!ok, svc: cl1(sk, 28), code: ok ? "" : cl1(code || "other", 18), inp: cl1(inp, 160), dst: cl1(dst, 80) }; if(fu) ld.fin = fu; /* fin hanya dikirim jika ada & valid */
       var wr = function(d, retry){
         return db.collection("logs").add(d).then(function(){ console.log("[log] tercatat"); }).catch(function(e){
           console.warn("[log] gagal tulis:", e && e.code, e && e.message, d);
-          if(retry && e && e.code === "permission-denied" && d.fin){ var d2 = Object.assign({}, d, { fin: "" }); return wr(d2, false); }
+          if(retry && e && e.code === "permission-denied" && d.fin){ var d2 = Object.assign({}, d); delete d2.fin; return wr(d2, false); }
           if(admUser) toast("Log gagal ditulis: " + ((e && e.code) || "error") + " (cek Rules)", "err");
         });
       };
