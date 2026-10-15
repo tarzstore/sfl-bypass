@@ -1422,7 +1422,7 @@ img,svg,video{max-width:100%}
       db.collection("stats").doc(w.day).set(o, { merge: true }).catch(function(){});
     }catch(e){}
     try{
-      db.collection("logs").add({ t: Date.now(), ok: !!ok, svc: sk, code: ok ? "" : (code || "other"), inp: String(inp || "").slice(0, 160), dst: String(dst || "").slice(0, 80), fin: ok && fin ? String(fin).slice(0, 500) : "" }).catch(function(){});
+      db.collection("logs").add({ t: Date.now(), ok: !!ok, svc: sk, code: ok ? "" : (code || "other"), inp: String(inp || "").slice(0, 160), dst: String(dst || "").slice(0, 80), fin: ok && fin ? String(fin).slice(0, 500) : "" }).catch(function(e){ console.warn("[log] gagal tulis:", e && e.code, e && e.message); });
     }catch(e){}
   }
   function logVisit(){
@@ -1587,11 +1587,11 @@ img,svg,video{max-width:100%}
     }
 
     function load(force){
-      if(logCache && !force){ render(); return; }
       var had = !!logCache, t0 = Date.now();
+      if(had && !force) render(); /* tampilkan cache dulu, lalu selalu ambil data terbaru dari server */
       rf.disabled = true; rf.classList.add("ld");
       if(!had) msg("Memuat log...", "");
-      db.collection("logs").orderBy("t", "desc").limit(100).get().then(function(snap){
+      db.collection("logs").orderBy("t", "desc").limit(100).get({ source: "server" }).then(function(snap){
         logCache = []; snap.forEach(function(d){ var x = d.data(); x.id = d.id; logCache.push(x); }); render();
       }).catch(function(err){
         if(had){ toast("Gagal memuat ulang", "err"); return; }
@@ -1638,7 +1638,7 @@ img,svg,video{max-width:100%}
       });
       body.appendChild(cl);
     }
-    load(false);
+    load(true);
   }
 
   function denied(err){
