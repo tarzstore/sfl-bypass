@@ -888,6 +888,19 @@ img,svg,video{max-width:100%}
 .adm-mt input:focus{box-shadow:none}
 .adm-mt .ln button{height:36px;padding:0 14px;border-radius:10px;font:700 12px var(--sans)}
 .adm-badge{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:99px;background:var(--soft);color:var(--acc);font:600 9.5px var(--mono);vertical-align:2px}
+.adm-mt .ln button.ghost{background:var(--s2);border-color:var(--line2);color:var(--ink)}
+.pr-add{display:flex;gap:8px;margin:0 0 20px}
+.pr-add input{flex:1;min-width:0;height:44px;padding:0 14px;border-radius:12px;border:1px solid var(--line2);background:var(--s1);color:var(--ink);font:400 14px var(--sans)}
+.pr-add input:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px var(--soft)}
+.pr-add button{flex:none;display:inline-flex;align-items:center;gap:6px;height:44px;padding:0 16px;border-radius:12px;border:0;background:var(--acc);color:var(--on-acc);font:700 13px var(--sans);cursor:pointer}
+.pr-add button svg{width:14px;height:14px}
+.pr-add button:disabled{opacity:.6;cursor:default}
+.pr-top .ln button{height:34px}
+.pr-it .adm-row{margin-bottom:10px}
+.pr-it .adm-row .n{font:600 13.5px var(--mono)}
+.pr-it .adm-cust{margin:-2px 0 10px}
+.pr-x:hover{color:var(--err);border-color:var(--err)}
+.adm-row .adm-ed + .adm-ed{margin-left:-4px}
 </style>
 </head>
 <body>
@@ -1445,6 +1458,7 @@ img,svg,video{max-width:100%}
     }
     if(!maint.on){ try{ await ensureFb(); await refreshCfgNow(); }catch(e){} }
     if(maint.on){ showError(maint.msg.trim().slice(0, 160) || MAINT_DEF); return; }
+    var pHit = protHit(input); if(pHit){ showError(pHit); return; }
     if(hid[svc]){ showError("Layanan sedang dinonaktifkan"); return; }
     var infS = stInfo(svc); if(infS){ showError(infS.msg); return; }
     var bareRx = SERVICES[svc].bare;
@@ -1556,7 +1570,9 @@ img,svg,video{max-width:100%}
   var authReady = new Promise(function(r){ authResolve = r; });
   var MAINT_DEF = "Website sedang maintenance, coba lagi nanti.";
   var maint = { on: false, msg: "" };
-  function cfg(o){ return Object.assign({ off: off, order: ord, hid: hid, names: names, maint: maint, added: added }, o || {}); }
+  var PROT_DEF = "Link ini dilindungi, tidak bisa di-bypass.";
+  var prot = { msg: "", items: [] };
+  function cfg(o){ return Object.assign({ off: off, order: ord, hid: hid, names: names, maint: maint, added: added, prot: prot }, o || {}); }
   /* Firebase dimuat belakangan (tidak menghambat tampilan awal) */
   var FB_SRC = ["app", "auth", "firestore"].map(function(n){ return "https://www.gstatic.com/firebasejs/10.12.2/firebase-" + n + "-compat.js"; });
   var K_CFG = "tarz_cfg_v1", CFG_TTL = 90000;
@@ -1585,10 +1601,35 @@ img,svg,video{max-width:100%}
     logVisit(); loadCfg();
   }
   /* konfigurasi layanan: dari cache dulu, baca server hanya jika cache sudah lewat TTL (hemat read Firestore) */
+  /* ===== proteksi link sendiri ===== */
+  function protKey(u){
+    u = String(u || "").trim(); if(!u) return "";
+    if(!/^[a-z][a-z0-9+.-]*:\/\//i.test(u)) u = "https://" + u;
+    try{ var x = new URL(u); return x.hostname.toLowerCase().replace(/^www\./, "") + x.pathname.replace(/\/+$/, ""); }catch(e){ return ""; }
+  }
+  function parseProt(d){
+    var o = { msg: "", items: [] };
+    if(d && typeof d === "object"){
+      o.msg = String(d.msg || "").slice(0, 160);
+      if(Array.isArray(d.items)) d.items.forEach(function(it){
+        if(it && typeof it.u === "string" && protKey(it.u)) o.items.push({ u: it.u.slice(0, 200), m: String(it.m || "").slice(0, 160) });
+      });
+    }
+    return o;
+  }
+  function protHit(input){
+    var k = protKey(input); if(!k) return null;
+    var host = k.split("/")[0];
+    for(var i = 0; i < prot.items.length; i++){
+      var ik = protKey(prot.items[i].u);
+      if(ik && (ik === k || (ik.indexOf("/") < 0 && ik === host))) return (prot.items[i].m || prot.msg || PROT_DEF).trim().slice(0, 160);
+    }
+    return null;
+  }
   function readCfg(){ try{ var c = JSON.parse(get(K_CFG) || "null"); if(c && c.d && typeof c.d === "object") return c; }catch(e){} return null; }
   function writeCfg(d){ try{ set(K_CFG, JSON.stringify({ t: Date.now(), d: d })); }catch(e){} }
   function applyCfg(d){
-    off = d.off || {}; ord = Array.isArray(d.order) ? d.order : []; hid = d.hid || {}; added = (d.added && typeof d.added === "object") ? d.added : {}; applyAdded(); names = (d.names && typeof d.names === "object") ? d.names : {}; applyNames(); maint = (d.maint && typeof d.maint === "object") ? { on: !!d.maint.on, msg: String(d.maint.msg || "") } : { on: false, msg: "" }; buildSvcList(); if(!$("adm").hidden && admUser && typeof syncMaint === "function") syncMaint();
+    off = d.off || {}; ord = Array.isArray(d.order) ? d.order : []; hid = d.hid || {}; added = (d.added && typeof d.added === "object") ? d.added : {}; applyAdded(); names = (d.names && typeof d.names === "object") ? d.names : {}; applyNames(); maint = (d.maint && typeof d.maint === "object") ? { on: !!d.maint.on, msg: String(d.maint.msg || "") } : { on: false, msg: "" }; prot = parseProt(d.prot); buildSvcList(); if(!$("adm").hidden && admUser && typeof syncMaint === "function") syncMaint();
   }
   function loadCfg(){
     if(cfgUnsub) return;
@@ -1769,14 +1810,15 @@ img,svg,video{max-width:100%}
     var TI = {
       svc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>',
       stat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
-      log: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>'
+      log: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>',
+      prot: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.2 8.2-8 9-4.8-.8-8-4.5-8-9V6l8-3z"/></svg>'
     };
     function showTab(t){
       admTab = t; syncMaint = null; closeMenu();
       Object.keys(TB).forEach(function(k){ TB[k].setAttribute("aria-selected", k === t); });
-      body.innerHTML = ""; (t === "stat" ? viewStats : t === "log" ? viewLog : viewSvc)(body);
+      body.innerHTML = ""; (t === "stat" ? viewStats : t === "log" ? viewLog : t === "prot" ? viewProt : viewSvc)(body);
     }
-    [["svc", "Layanan"], ["stat", "Statistik"], ["log", "Log"]].forEach(function(x){
+    [["svc", "Layanan"], ["prot", "Proteksi"], ["stat", "Statistik"], ["log", "Log"]].forEach(function(x){
       var bt = el("button"); bt.type = "button"; bt.setAttribute("role", "tab"); bt.innerHTML = TI[x[0]]; bt.appendChild(document.createTextNode(x[1]));
       bt.addEventListener("click", function(){ if(admTab !== x[0]) showTab(x[0]); });
       TB[x[0]] = bt; tabs.appendChild(bt);
@@ -1947,6 +1989,101 @@ img,svg,video{max-width:100%}
     inp.addEventListener("keydown", function(e){ if(e.key === "Enter") bs.click(); });
     syncMaint = fill; fill();
     c.appendChild(box);
+  }
+
+  /* ===== tab proteksi: cegah link sendiri di-bypass ===== */
+  function viewProt(c){
+    var IC = {
+      shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.2 8.2-8 9-4.8-.8-8-4.5-8-9V6l8-3z"/><path d="M9 12l2 2 4-4"/></svg>',
+      edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>',
+      del: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 002 2h6a2 2 0 002-2l1-12M9 7V4h6v3"/></svg>',
+      plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>'
+    };
+    function save(np, ok, done){
+      db.doc("config/services").set(cfg({ prot: np }))
+        .then(function(){ prot = np; toast(ok); if(done) done(true); })
+        .catch(function(err){ denied(err); if(done) done(false); });
+    }
+    function norm(u){ u = u.trim(); return /^[a-z][a-z0-9+.-]*:\/\//i.test(u) ? u : "https://" + u; }
+    function cut(u){ return u.replace(/^https?:\/\//i, "").replace(/^www\./i, ""); }
+
+    /* pesan default */
+    var box = el("div", "adm-mt pr-top"), hd = el("div", "hd"), ri = el("span", "ri"), tx = el("div", "tx"), st = el("span", "s");
+    ri.innerHTML = IC.shield; st.textContent = prot.items.length + " link";
+    tx.appendChild(el("span", "n", "Proteksi Link")); tx.appendChild(st);
+    hd.appendChild(ri); hd.appendChild(tx); box.appendChild(hd);
+    var ln = el("div", "ln"), inp = el("input"), bt = el("button", "ghost", "Tes"), bs = el("button", null, "Simpan");
+    inp.type = "text"; inp.maxLength = 160; inp.placeholder = PROT_DEF; inp.value = prot.msg; inp.setAttribute("aria-label", "Pesan toast default");
+    bt.type = "button"; bs.type = "button";
+    ln.appendChild(inp); ln.appendChild(bt); ln.appendChild(bs); box.appendChild(ln);
+    c.appendChild(box);
+    bt.addEventListener("click", function(){ toast(inp.value.trim().slice(0, 160) || PROT_DEF, "err"); });
+    function saveMsg(){ bs.disabled = true; save({ msg: inp.value.trim().slice(0, 160), items: prot.items }, "Pesan disimpan", function(){ bs.disabled = false; }); }
+    bs.addEventListener("click", saveMsg);
+    inp.addEventListener("keydown", function(e){ if(e.key === "Enter") saveMsg(); });
+
+    /* tambah */
+    var add = el("div", "pr-add"), iU = el("input"), ba = el("button"); 
+    iU.type = "text"; iU.maxLength = 200; iU.placeholder = "Tempel link, mis. https://sfl.gl/mU2co"; iU.setAttribute("autocapitalize", "none"); iU.setAttribute("autocorrect", "off"); iU.spellcheck = false; iU.setAttribute("aria-label", "Link");
+    ba.type = "button"; ba.innerHTML = IC.plus; ba.appendChild(document.createTextNode("Tambah"));
+    add.appendChild(iU); add.appendChild(ba); c.appendChild(add);
+    function doAdd(){
+      var u = iU.value.trim(), k = protKey(u);
+      if(!k){ toast("Link tidak valid", "err"); iU.focus(); return; }
+      if(prot.items.length >= 100){ toast("Maksimal 100 link", "err"); return; }
+      if(prot.items.some(function(x){ return protKey(x.u) === k; })){ toast("Sudah ada", "err"); iU.focus(); return; }
+      ba.disabled = true;
+      save({ msg: prot.msg, items: prot.items.concat([{ u: norm(u).slice(0, 200), m: "" }]) }, "Ditambahkan", function(ok){ if(ok) renderAdm(); else ba.disabled = false; });
+    }
+    ba.addEventListener("click", doAdd);
+    iU.addEventListener("keydown", function(e){ if(e.key === "Enter"){ e.preventDefault(); doAdd(); } });
+
+    /* daftar */
+    var chip = el("span", "adm-chip"); chip.textContent = prot.items.length;
+    c.appendChild(admSec("Terlindungi", chip));
+    if(!prot.items.length){ c.appendChild(el("div", "st-empty", "Belum ada link")); return; }
+    var closeOpen = null;
+    prot.items.forEach(function(it, idx){
+      var wrap = el("div", "pr-it"), r = el("div", "adm-row"), ri2 = el("span", "ri"), t2 = el("div", "tx");
+      var eb = el("button", "adm-ed"), xb = el("button", "adm-ed pr-x");
+      ri2.innerHTML = IC.shield;
+      t2.appendChild(el("span", "n", cut(it.u)));
+      if(it.m) t2.appendChild(el("span", "s sm", it.m));
+      eb.type = "button"; eb.setAttribute("aria-label", "Edit"); eb.setAttribute("aria-expanded", "false"); eb.innerHTML = IC.edit;
+      xb.type = "button"; xb.setAttribute("aria-label", "Hapus"); xb.innerHTML = IC.del;
+      r.appendChild(ri2); r.appendChild(t2); r.appendChild(eb); r.appendChild(xb); wrap.appendChild(r); c.appendChild(wrap);
+
+      xb.addEventListener("click", function(){
+        xb.disabled = true;
+        save({ msg: prot.msg, items: prot.items.filter(function(_, i){ return i !== idx; }) }, "Dihapus", function(ok){ if(ok) renderAdm(); else xb.disabled = false; });
+      });
+
+      var ed = null;
+      function closeEd(){ if(ed){ ed.remove(); ed = null; } eb.setAttribute("aria-expanded", "false"); if(closeOpen === closeEd) closeOpen = null; }
+      eb.addEventListener("click", function(){
+        if(ed){ closeEd(); return; }
+        if(closeOpen) closeOpen();
+        ed = el("div", "adm-cust"); closeOpen = closeEd; eb.setAttribute("aria-expanded", "true");
+        var l1 = el("label", null, "Link"), e1 = el("input"), l2 = el("label", null, "Pesan toast"), e2 = el("input");
+        e1.type = "text"; e1.maxLength = 200; e1.value = it.u; e1.setAttribute("autocapitalize", "none"); e1.spellcheck = false;
+        e2.type = "text"; e2.maxLength = 160; e2.value = it.m; e2.placeholder = prot.msg || PROT_DEF;
+        l1.appendChild(e1); l2.appendChild(e2); ed.appendChild(l1); ed.appendChild(l2);
+        var acts = el("div", "acts"), bc = el("button", null, "Batal"), bk = el("button", "pri", "Simpan");
+        bc.type = "button"; bk.type = "button"; acts.appendChild(bc); acts.appendChild(bk); ed.appendChild(acts);
+        wrap.appendChild(ed); e2.focus({ preventScroll: true });
+        bc.addEventListener("click", closeEd);
+        function ok(){
+          var k = protKey(e1.value);
+          if(!k){ toast("Link tidak valid", "err"); e1.focus(); return; }
+          if(prot.items.some(function(x, i){ return i !== idx && protKey(x.u) === k; })){ toast("Sudah ada", "err"); e1.focus(); return; }
+          bk.disabled = true;
+          var ni = prot.items.map(function(x, i){ return i === idx ? { u: norm(e1.value).slice(0, 200), m: e2.value.trim().slice(0, 160) } : x; });
+          save({ msg: prot.msg, items: ni }, "Disimpan", function(done){ if(done) renderAdm(); else bk.disabled = false; });
+        }
+        bk.addEventListener("click", ok);
+        [e1, e2].forEach(function(i){ i.addEventListener("keydown", function(e){ if(e.key === "Enter"){ e.preventDefault(); ok(); } else if(e.key === "Escape"){ e.stopPropagation(); closeEd(); } }); });
+      });
+    });
   }
 
   /* ===== statistik (tampilan admin) ===== */
