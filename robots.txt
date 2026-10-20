@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Ganti dengan alamat situs Anda yang sebenarnya:
+# Sitemap: https://tarzbypass.vercel.app/

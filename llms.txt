@@ -1,0 +1,15 @@
+# Tarz Store
+
+> Tarz Store adalah situs berbahasa Indonesia untuk mengunduh aplikasi MOD APK Android, mengambil cheat gratis (Cheat Free), dan membuka link shortener (Bypass Link). Seluruh fitur tersedia dari satu halaman tanpa perlu akun.
+
+## Halaman utama
+
+- [Daftar Aplikasi (MOD APK)](/): cari aplikasi lewat kolom pencarian atau filter kategori, lalu buka detail untuk versi, ukuran, Android minimal, fitur MOD, dan tombol Download.
+- [Cheat Free](/#cheat): daftar cheat gratis dengan tombol Install dan Get Key, serta video tutorial cara mendapatkan key.
+- [Bypass Link](/#bypass): tempel link pendek dari layanan yang didukung, hasilnya berupa alamat tujuan asli.
+
+## Catatan untuk agen
+
+- Aplikasi tampil dalam bentuk daftar tombol; setiap kartu membuka dialog detail dengan tautan unduhan.
+- Browser yang mendukung WebMCP dapat memakai tool `search_apps` (kata kunci dan kategori) dan `open_section` (mod, cheat, bypass).
+- Panel admin bersifat privat dan membutuhkan login; tidak perlu diakses oleh agen.
